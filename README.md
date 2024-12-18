@@ -34,7 +34,7 @@ The program provides the following functionalities:
 1. Clone the repository:
    ```bash
    git clone https://github.com/nerdylua/DSA-lab-part-b.git
-   cd realtime-stock-tracker
+   cd DSA-lab-part-b
    ```
 1. Replace the `api_key` in the code with your own Alpha Vantage API key.
 
