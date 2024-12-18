@@ -71,7 +71,7 @@ class StockTrackerApp(QWidget):
         super().__init__()
         self.setWindowTitle("Stock Portfolio Tracker")
         self.portfolio = Portfolio()
-        self.api_key = "R02AZ2MTJ5THYL24"  # Replace with your API key
+        self.api_key = "api_key"  # Replace with your API key
 
         # Layout setup
         main_layout = QVBoxLayout()
