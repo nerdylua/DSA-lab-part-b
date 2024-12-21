@@ -2,7 +2,7 @@ import requests
 from PyQt5.QtWidgets import (
     QApplication, QWidget, QVBoxLayout, QHBoxLayout, QLineEdit, QPushButton, QLabel, QMessageBox
 )
-from PyQt5.QtGui import QFont
+from PyQt5.QtGui import QFont, QColor, QPalette
 from PyQt5.QtCore import Qt
 
 # Stock Class
@@ -12,7 +12,6 @@ class Stock:
         self.shares = shares
         self.price = price
         self.next = None
-
 
 # Portfolio Class
 class Portfolio:
@@ -64,28 +63,25 @@ class Portfolio:
             temp = temp.next
         return portfolio_data if portfolio_data else "No stocks in portfolio"
 
-
 # Main App Class
 class StockTrackerApp(QWidget):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Stock Portfolio Tracker")
+        self.setWindowTitle("Bright Stock Portfolio Tracker")
+        self.resize(800, 600)
         self.portfolio = Portfolio()
-        self.api_key = "api_key"  # Replace with your API key
+        self.api_key = "your_api_key"  # Replace with your API key
 
         # Layout setup
         main_layout = QVBoxLayout()
+        main_layout.setSpacing(20)
 
         # Add Stock Section
         add_stock_layout = QHBoxLayout()
-        self.symbol_input = QLineEdit()
-        self.symbol_input.setPlaceholderText("Stock Symbol")
-        self.shares_input = QLineEdit()
-        self.shares_input.setPlaceholderText("Shares")
-        self.price_input = QLineEdit()
-        self.price_input.setPlaceholderText("Price per Share")
-        add_stock_button = QPushButton("Add Stock")
-        add_stock_button.clicked.connect(self.add_stock)
+        self.symbol_input = self.create_input("Stock Symbol")
+        self.shares_input = self.create_input("Shares")
+        self.price_input = self.create_input("Price per Share")
+        add_stock_button = self.create_button("Add Stock", self.add_stock, "#4CAF50")
 
         add_stock_layout.addWidget(self.symbol_input)
         add_stock_layout.addWidget(self.shares_input)
@@ -95,10 +91,8 @@ class StockTrackerApp(QWidget):
 
         # Remove Stock Section
         remove_stock_layout = QHBoxLayout()
-        self.remove_input = QLineEdit()
-        self.remove_input.setPlaceholderText("Remove Stock Symbol")
-        remove_stock_button = QPushButton("Remove Stock")
-        remove_stock_button.clicked.connect(self.remove_stock)
+        self.remove_input = self.create_input("Remove Stock Symbol")
+        remove_stock_button = self.create_button("Remove Stock", self.remove_stock, "#FF5722")
 
         remove_stock_layout.addWidget(self.remove_input)
         remove_stock_layout.addWidget(remove_stock_button)
@@ -106,44 +100,56 @@ class StockTrackerApp(QWidget):
 
         # Update Price Section
         update_price_layout = QHBoxLayout()
-        self.update_symbol_input = QLineEdit()
-        self.update_symbol_input.setPlaceholderText("Update Stock Symbol")
-        update_price_button = QPushButton("Fetch & Update Price")
-        update_price_button.clicked.connect(self.update_stock_price)
+        self.update_symbol_input = self.create_input("Update Stock Symbol")
+        update_price_button = self.create_button("Fetch & Update Price", self.update_stock_price, "#2196F3")
 
         update_price_layout.addWidget(self.update_symbol_input)
         update_price_layout.addWidget(update_price_button)
         main_layout.addLayout(update_price_layout)
 
         # Show Portfolio Button
-        show_portfolio_button = QPushButton("Show Portfolio")
-        show_portfolio_button.clicked.connect(self.show_portfolio)
+        show_portfolio_button = self.create_button("Show Portfolio", self.show_portfolio, "#9C27B0")
         main_layout.addWidget(show_portfolio_button)
 
         # Total Value Label
         self.total_value_label = QLabel("Total Portfolio Value: $0.00")
+        self.total_value_label.setFont(QFont("Arial", 18, QFont.Bold))
+        self.total_value_label.setAlignment(Qt.AlignCenter)
+        self.total_value_label.setStyleSheet("color: #333; background-color: #FFD700; padding: 10px;")
         main_layout.addWidget(self.total_value_label)
 
         # Apply styles
-        self.apply_styles()
         self.setLayout(main_layout)
+        self.apply_palette()
 
-    def apply_styles(self):
-        font = QFont("Arial", 14)
-        self.symbol_input.setFont(font)
-        self.shares_input.setFont(font)
-        self.price_input.setFont(font)
-        self.remove_input.setFont(font)
-        self.update_symbol_input.setFont(font)
-        self.total_value_label.setFont(QFont("Arial", 16, QFont.Bold))
-        self.total_value_label.setAlignment(Qt.AlignCenter)
+    def create_input(self, placeholder):
+        input_field = QLineEdit()
+        input_field.setPlaceholderText(placeholder)
+        input_field.setFont(QFont("Arial", 14))
+        input_field.setStyleSheet("padding: 10px; border: 2px solid #ccc; border-radius: 5px;")
+        return input_field
+
+    def create_button(self, text, handler, color):
+        button = QPushButton(text)
+        button.setFont(QFont("Arial", 14, QFont.Bold))
+        button.setStyleSheet(
+            f"padding: 10px; background-color: {color}; color: white; border: none; border-radius: 5px;"
+            "hover { background-color: #555; }"
+        )
+        button.clicked.connect(handler)
+        return button
+
+    def apply_palette(self):
+        palette = self.palette()
+        palette.setColor(QPalette.Window, QColor("#f5f5f5"))
+        palette.setColor(QPalette.WindowText, QColor("#333"))
+        self.setPalette(palette)
 
     def fetch_stock_price(self, symbol):
         try:
             url = f"https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol={symbol}&apikey={self.api_key}"
             response = requests.get(url)
             data = response.json()
-            print(data)  # Debug: Print the entire response
             if "Global Quote" in data and "05. price" in data["Global Quote"]:
                 price = float(data["Global Quote"]["05. price"])
                 return price
@@ -152,7 +158,6 @@ class StockTrackerApp(QWidget):
         except Exception as e:
             QMessageBox.warning(self, "API Error", f"Failed to fetch price for {symbol}: {e}")
             return None
-
 
     def add_stock(self):
         symbol = self.symbol_input.text()
@@ -200,7 +205,6 @@ class StockTrackerApp(QWidget):
         self.shares_input.clear()
         self.price_input.clear()
         self.update_symbol_input.clear()
-
 
 # Run the app
 if __name__ == "__main__":
